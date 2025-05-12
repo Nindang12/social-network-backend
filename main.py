@@ -11,10 +11,21 @@ from auth.dependencies import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+# Log environment variables (excluding sensitive data)
+logger.info(f"CORS_ORIGINS: {os.getenv('CORS_ORIGINS')}")
+logger.info(f"MongoDB URL configured: {'Yes' if os.getenv('MONGODB_URL') else 'No'}")
+logger.info(f"Secret key configured: {'Yes' if os.getenv('SECRET_KEY') else 'No'}")
+
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+logger.info(f"Configured CORS origins: {CORS_ORIGINS}")
 
 # ------------------------
 # Mock Models and Schemas
@@ -56,8 +67,9 @@ app.add_middleware(
 )
 
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
+async def root():
+    logger.info("Root endpoint called")
+    return {"message": "API is running"}
 
 @app.post("/signup")
 def signup(user: User):
