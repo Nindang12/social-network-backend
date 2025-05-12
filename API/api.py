@@ -1,6 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, Query, Form, File, UploadFile
 from typing import List, Optional, Any
 from pydantic import BaseModel
+import sys
+import os
+
+# Add the parent directory to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from DAO.DAO_manager import DAO_Manager
 from auth.jwt_handler import create_access_token
 import json
