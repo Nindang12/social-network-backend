@@ -9,6 +9,7 @@ from bson import ObjectId
 from datetime import datetime
 from auth.dependencies import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
+from config import CORS_ORIGINS
 
 # ------------------------
 # Mock Models and Schemas
@@ -52,7 +53,7 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
