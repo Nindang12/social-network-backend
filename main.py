@@ -25,7 +25,15 @@ app = FastAPI()
 # CORS configuration
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000")
 # Clean up CORS URL and convert to list
-origins = [origin.strip().rstrip("/").rstrip(";") for origin in CORS_ORIGINS.split(",")]
+origins = []
+for origin in CORS_ORIGINS.split(","):
+    # Remove whitespace, trailing slash, semicolon and any other unwanted characters
+    cleaned_origin = origin.strip().rstrip("/").rstrip(";").rstrip()
+    if cleaned_origin:
+        origins.append(cleaned_origin)
+
+logger.info(f"Raw CORS_ORIGINS env: {CORS_ORIGINS}")
+logger.info(f"Cleaned CORS origins: {origins}")
 
 # Add CORS middleware
 app.add_middleware(
@@ -37,7 +45,6 @@ app.add_middleware(
 )
 
 # Log configuration
-logger.info(f"Configured CORS origins: {origins}")
 logger.info(f"MongoDB URL status: {'Configured' if os.getenv('MONGODB_URL') else 'Not configured'}")
 logger.info(f"Secret key status: {'Configured' if os.getenv('SECRET_KEY') else 'Not configured'}")
 
