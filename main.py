@@ -25,8 +25,9 @@ logger.info(f"CORS_ORIGINS: {os.getenv('CORS_ORIGINS')}")
 logger.info(f"MongoDB URL configured: {'Yes' if os.getenv('MONGODB_URL') else 'No'}")
 logger.info(f"Secret key configured: {'Yes' if os.getenv('SECRET_KEY') else 'No'}")
 
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
-logger.info(f"Configured CORS origins: {CORS_ORIGINS}")
+# CORS configuration
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+logger.info(f"Configured CORS origins: {origins}")
 
 # ------------------------
 # Mock Models and Schemas
@@ -61,7 +62,7 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -73,7 +74,7 @@ async def root():
         "status": "ok",
         "message": "FastAPI is running",
         "environment": {
-            "CORS_ORIGINS": CORS_ORIGINS,
+            "CORS_ORIGINS": origins,
             "PORT": os.environ.get("PORT", "8000"),
             "MONGODB_URL": "Configured" if os.getenv("MONGODB_URL") else "Not configured"
         }
