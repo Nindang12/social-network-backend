@@ -13,6 +13,7 @@ import os
 from dotenv import load_dotenv
 import logging
 import uvicorn
+import re
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -23,16 +24,18 @@ load_dotenv()
 app = FastAPI()
 
 # CORS configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-# Clean up CORS URL and convert to list
-origins = []
-for origin in CORS_ORIGINS.split(","):
-    # Remove whitespace, trailing slash, semicolon and any other unwanted characters
-    cleaned_origin = origin.strip().rstrip("/").rstrip(";").rstrip()
-    if cleaned_origin:
-        origins.append(cleaned_origin)
+raw_cors = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+logger.info(f"Raw CORS_ORIGINS env: {raw_cors}")
 
-logger.info(f"Raw CORS_ORIGINS env: {CORS_ORIGINS}")
+# Clean up CORS URL - remove any special characters and trailing slashes
+def clean_url(url):
+    # Remove trailing slashes, semicolons and whitespace
+    cleaned = url.strip()
+    cleaned = re.sub(r'[/;]+$', '', cleaned)
+    return cleaned
+
+# Process CORS origins
+origins = [clean_url(raw_cors)]
 logger.info(f"Cleaned CORS origins: {origins}")
 
 # Add CORS middleware
@@ -45,7 +48,8 @@ app.add_middleware(
 )
 
 # Log configuration
-logger.info(f"MongoDB URL status: {'Configured' if os.getenv('MONGODB_URL') else 'Not configured'}")
+mongodb_url = os.getenv("MONGODB_URL")
+logger.info(f"MongoDB URL status: {'Configured' if mongodb_url else 'Not configured'}")
 logger.info(f"Secret key status: {'Configured' if os.getenv('SECRET_KEY') else 'Not configured'}")
 
 @app.get("/")
@@ -55,7 +59,7 @@ async def root():
         "message": "FastAPI is running",
         "config": {
             "cors_origins": origins,
-            "mongodb_status": "Configured" if os.getenv("MONGODB_URL") else "Not configured",
+            "mongodb_status": "Configured" if mongodb_url else "Not configured",
             "secret_key_status": "Configured" if os.getenv("SECRET_KEY") else "Not configured"
         }
     }
