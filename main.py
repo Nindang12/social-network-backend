@@ -20,14 +20,38 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# Log environment variables (excluding sensitive data)
-logger.info(f"CORS_ORIGINS: {os.getenv('CORS_ORIGINS')}")
-logger.info(f"MongoDB URL configured: {'Yes' if os.getenv('MONGODB_URL') else 'No'}")
-logger.info(f"Secret key configured: {'Yes' if os.getenv('SECRET_KEY') else 'No'}")
+app = FastAPI()
 
 # CORS configuration
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+# Clean up CORS URL and convert to list
+origins = [origin.strip().rstrip("/").rstrip(";") for origin in CORS_ORIGINS.split(",")]
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Log configuration
 logger.info(f"Configured CORS origins: {origins}")
+logger.info(f"MongoDB URL status: {'Configured' if os.getenv('MONGODB_URL') else 'Not configured'}")
+logger.info(f"Secret key status: {'Configured' if os.getenv('SECRET_KEY') else 'Not configured'}")
+
+@app.get("/")
+async def root():
+    return {
+        "status": "ok",
+        "message": "FastAPI is running",
+        "config": {
+            "cors_origins": origins,
+            "mongodb_status": "Configured" if os.getenv("MONGODB_URL") else "Not configured",
+            "secret_key_status": "Configured" if os.getenv("SECRET_KEY") else "Not configured"
+        }
+    }
 
 # ------------------------
 # Mock Models and Schemas
@@ -57,25 +81,6 @@ class UserUpdate(BaseModel):
     email: str
     bio: str
 
-app = FastAPI()
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
-async def root():
-    return {
-        "status": "ok",
-        "message": "FastAPI is running",
-        "port": os.environ.get("PORT", "8000")
-    }
-
 @app.post("/signup")
 def signup(user: User):
     print(user)
@@ -87,6 +92,6 @@ def signup(user: User):
 # ... rest of your API endpoints ...
 
 # Khởi động server
-port = int(os.environ.get("PORT", 8000))
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port) 
