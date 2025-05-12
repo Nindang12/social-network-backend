@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 import logging
+import uvicorn
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -68,8 +69,15 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    logger.info("Root endpoint called")
-    return {"message": "API is running"}
+    return {
+        "status": "ok",
+        "message": "FastAPI is running",
+        "environment": {
+            "CORS_ORIGINS": CORS_ORIGINS,
+            "PORT": os.environ.get("PORT", "8000"),
+            "MONGODB_URL": "Configured" if os.getenv("MONGODB_URL") else "Not configured"
+        }
+    }
 
 @app.post("/signup")
 def signup(user: User):
@@ -79,4 +87,8 @@ def signup(user: User):
     Manager.create_user(user)
     return {"message": "User signed up", "user": user}
 
-# ... rest of your API endpoints ... 
+# ... rest of your API endpoints ...
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port) 
