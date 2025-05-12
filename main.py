@@ -73,11 +73,7 @@ async def root():
     return {
         "status": "ok",
         "message": "FastAPI is running",
-        "environment": {
-            "CORS_ORIGINS": origins,
-            "PORT": os.environ.get("PORT", "8000"),
-            "MONGODB_URL": "Configured" if os.getenv("MONGODB_URL") else "Not configured"
-        }
+        "port": os.environ.get("PORT", "8000")
     }
 
 @app.post("/signup")
@@ -90,6 +86,7 @@ def signup(user: User):
 
 # ... rest of your API endpoints ...
 
+# Khởi động server
+port = int(os.environ.get("PORT", 8000))
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port) 
